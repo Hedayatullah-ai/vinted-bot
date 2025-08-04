@@ -4,7 +4,8 @@ import time
 from keep_alive import keep_alive
 
 # 🔗 Din Discord webhook URL
-WEBHOOK_URL = "https://discord.com/api/webhooks/..."  # <- din webhook her
+WEBHOOK_URL = "https://discord.com/api/webhooks/1400926387900125276/_tuRD3GJWnegFeKx9EXblcNtK6xEUHsT0yKlD8iqfIaqOkCVlebfOFdO2WMafYJc84VF"
+
 SØGEORD = "ralph lauren polo"
 PRIS_MAKS = 120
 TJEK_HVERT_MINUT = 10  # fx 10 minutter
