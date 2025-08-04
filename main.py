@@ -1,13 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+from keep_alive import keep_alive
 
-WEBHOOK_URL = "https://discord.com/api/webhooks/1400926387900125276/_tuRD3GJWnegFeKx9EXblcNtK6xEUHsT0yKlD8iqfIaqOkCVlebfOFdO2WMafYJc84VF"
+# 🔗 Din Discord webhook URL
+WEBHOOK_URL = "https://discord.com/api/webhooks/..."  # <- din webhook her
 SØGEORD = "ralph lauren polo"
 PRIS_MAKS = 120
-TJEK_INTERVAL = 300  # tjek hvert 5. minut
+TJEK_HVERT_MINUT = 10  # fx 10 minutter
 
+# ✅ Flask-server til at holde Replit vågen
+keep_alive()
 
+# 🔎 Scraping-funktion
 def hent_vinted_scrape():
     base_url = "https://www.vinted.dk/catalog"
     params = {
@@ -16,9 +21,11 @@ def hent_vinted_scrape():
         "order": "newest_first"
     }
     headers = {
-        "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                       "AppleWebKit/537.36 (KHTML, like Gecko) "
-                       "Chrome/114.0.0.0 Safari/537.36")
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/114.0.0.0 Safari/537.36"
+        )
     }
     try:
         r = requests.get(base_url, params=params, headers=headers, timeout=10)
@@ -39,14 +46,17 @@ def hent_vinted_scrape():
                     price = 999999
                 link = "https://www.vinted.dk" + link_tag.get('href')
                 if all(word in title for word in SØGEORD.split()) and price <= PRIS_MAKS:
-                    items.append({"title": title_tag.text.strip(),
-                                 "price": price, "link": link})
+                    items.append({
+                        "title": title_tag.text.strip(),
+                        "price": price,
+                        "link": link
+                    })
         return items
     except Exception as e:
         print(f"[FEJL] Kunne ikke scrape Vinted: {e}")
         return []
 
-
+# 📩 Send til Discord
 def send_discord_notifikation(item):
     content = (f"🛍️ **Ny vare fundet!**\n"
                f"**{item['title']}**\n"
@@ -59,23 +69,22 @@ def send_discord_notifikation(item):
     except Exception as e:
         print(f"[FEJL] Kunne ikke sende til Discord: {e}")
 
-
-def main():
+# 🔁 Loop
+def check_vinted_loop():
     print("🤖 Starter Vinted-bot...")
     sendt_links = set()
     while True:
         print("🔍 Tjekker Vinted...")
         items = hent_vinted_scrape()
         if not items:
-            print("Ingen nye varer fundet lige nu.")
+            print("Ingen nye varer fundet.")
         else:
             for item in items:
                 if item["link"] not in sendt_links:
                     send_discord_notifikation(item)
                     sendt_links.add(item["link"])
-        print(f"⏳ Venter {TJEK_INTERVAL // 60} minutter...")
-        time.sleep(TJEK_INTERVAL)
+        print(f"⏳ Venter {TJEK_HVERT_MINUT} minutter...")
+        time.sleep(TJEK_HVERT_MINUT * 60)
 
-
-if __name__ == "__main__":
-    main()
+# ▶️ Kør loopet
+check_vinted_loop()
